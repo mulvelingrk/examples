@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Parent_Level_8__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <label>Parent_Level_8</label>
+    <referenceTo>Hierarchy_Test__c</referenceTo>
+    <relationshipLabel>Subtree Level 8</relationshipLabel>
+    <relationshipName>Subtree_Level_8</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>
