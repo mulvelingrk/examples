@@ -1,7 +1,7 @@
 @isTest
 private class QueryTest {
     
-    // API Version 66 applies SYSTEM_MODE by deafult:
+    // API Version 66 applies SYSTEM_MODE by default:
     @isTest
     static void testDefaultMode66() {
         User admin = [ select Profile.Name from User where Profile.Name = 'System Administrator' limit 1 ];
@@ -113,7 +113,7 @@ private class QueryTest {
         }
     }
     
-    // API Version 67 applies USER_MODE by deafult:
+    // API Version 67 applies USER_MODE by default:
     @isTest
     static void testDefaultMode67() {
         User admin = [ select Profile.Name from User where Profile.Name = 'System Administrator' limit 1 ];
@@ -204,8 +204,8 @@ private class QueryTest {
         }
         
         // When you go through DatabaseExecutor, it REMOVES the complex interactive effects of: static context (lexical / enclosing class), 
-        // dynamic context (virtual method / dynamic caller), and API version (66 / 67)! All that matters is the specific instance of 
-        // DatabaseExecutor you've chosen to go through! This is great because it makes your intent clear and normalizes behavior:
+        // dynamic context (override method "home class" / dynamic caller), and API version (66 / 67)! All that matters is the specific 
+        // instance of DatabaseExecutor you've chosen to go through! This is great because it makes your intent clear and normalizes behavior:
         System.runAs(user_a) {
             // Any queries thru DatabaseExecutor.UserMode will enforce security (RLS) regardless of API or outer context:
             Assert.areEqual(3, new Query66Caller().inner_inherited_userExecutor().size());
