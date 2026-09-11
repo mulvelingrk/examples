@@ -2,7 +2,7 @@
 Here are the steps for performing a FULL cleanup of all HierShare v2 side-effects (sharing & shadow records). The deletion of physical groups is parallelizable, which is of particular import due to how excruciatingly slow these operations are in larger HierShare implementations (> 100K physical Public Groups). Parallelization increases deletion throughput of Groups by a factor of 20x to 50x.
  
 # Pre-Requisites
-This process requires bespoke Apex classes (my own) to perform the cleanup. We do not have this code in any packaged product. The CNA FULL org contains these files, and I have backups. These classes must first be bundled in a Change Set and deployed to Prod. HierShareLooperTest should provide adequate test coverage:
+This process requires bespoke Apex classes (my own) to perform the cleanup. We do not have this code in any packaged product. The "source of truth" for these files is this repo (for now), though they probably belong in rkcore package (eventually). These classes must first be bundled in a Change Set and deployed to Prod. HierShareLooperTest should provide adequate test coverage:
 HierShareLooper
 HierShareLooperEraseBacklog
 HierShareLooperFillBacklog
