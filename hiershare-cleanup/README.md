@@ -12,7 +12,7 @@ HierShareLooperTest
 HierShareClobberPhase
 
 # Step 1
-De-activate HierShare v2 via its Process Administration page. We don't want HierShare triggers (and triggered-Flows) actively generating partial HierShare side-effects while cleanup is processing. The goal here is to achieve a "clean slate" before re-activation (if at all).
+De-activate HierShare v2 via its Process Administration page. We don't want HierShare triggers (and triggered-Flows) actively generating partial HierShare side-effects while cleanup is processing. The goal here is to achieve a "clean slate" before re-activation and a subsequent full recalc (if at all).
 
 # Step 2
 Parallelized cleanup of physical HierShare Groups (nodes) and by consequence (platform cascade-deletion) their associated GroupMembers (edges). Groups not related to HierShare will not be touched. 
