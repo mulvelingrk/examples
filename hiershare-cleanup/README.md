@@ -39,7 +39,7 @@ Because of the async chaos instigated by mass-parallelization, you may notice a 
 ```sql
 SELECT count() FROM Group WHERE Name LIKE 'HierShare%'
 ```
-If this count is anything other than 0, you should repeat this Step 2. For each subsequent round, only the remaining Groups will be processed - thus each new round should complete MUCH faster than the prior round. Repeat as necessary until the above query returns 0 rows. Extremely large orgs (in excess 1 million HierShare Groups) may require as many as 4 or 5 rounds to completion.
+If this count is anything other than 0, you should repeat this Step 2. For each subsequent round, only the remaining Groups will be processed - thus each new round should complete MUCH faster than the prior round. Repeat as necessary until the above query returns 0 rows. Extremely large orgs (in excess 1 million HierShare Groups) may require several rounds (e.g. 6+) to completion.
 
 # Step 3
 Cleanup rkcore__HierShare_Group_Mappings__c (Group Mappings) and rkcore__HierShare_GroupMember_Mappings__c (GroupMember Mappings). Since these utilize "soft" or "polymorphic" external ID references to their physical Groups, they are not cascade-deleted by the prior step.
