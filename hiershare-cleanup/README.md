@@ -3,13 +3,13 @@ Here are the steps for performing a FULL cleanup of all HierShare v2 side-effect
  
 # Pre-Requisites
 This process requires bespoke Apex classes (my own) to perform the cleanup. We do not have this code in any packaged product. The "source of truth" for these files is this repo (for now), though they probably belong in rkcore package (eventually). These classes must first be bundled in a Change Set and deployed to Prod. HierShareLooperTest should provide adequate test coverage:
-HierShareLooper
-HierShareLooperEraseBacklog
-HierShareLooperFillBacklog
-HierShareLooperPhaseBatch
-HierShareLooperProcessBacklog
-HierShareLooperTest
-HierShareClobberPhase
+- HierShareLooper
+- HierShareLooperEraseBacklog
+- HierShareLooperFillBacklog
+- HierShareLooperPhaseBatch
+- HierShareLooperProcessBacklog
+- HierShareLooperTest
+- HierShareClobberPhase
 
 # Step 1
 De-activate HierShare v2 via its Process Administration page. We don't want HierShare triggers (and triggered-Flows) actively generating partial HierShare side-effects while cleanup is processing. The goal here is to achieve a "clean slate" before re-activation and a subsequent full recalc (if at all).
