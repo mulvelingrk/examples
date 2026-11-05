@@ -2,7 +2,7 @@
 Here is my design draft for new HierShare "Cleanup" tooling to improve upon pain-points encountered with the unmanaged "Clobber" scripts I have floating around - which are themselves an improvement over rkcore's built-in "Cleanup" processing (exposed in HierShare's Process Admin UI). The latter is NOT recommended for use, and should be removed from the UI. 
 
 ## Step 1: ChildObject Shares Cleanup
-Generally, it's safest and recommended to first cleanup ChildObject Shares and THEN GroupMembers / Groups as a follow-up step. However, the Shares cleanup step can be skipped in lower-volume orgs, or orgs where the Assignments plus Child-Nodes "fan-out factor" is guaranteed to remain _reasonable_ (~ 10 each Node with no large outliers) across the dataset. If you don't cleanup Shares first, the platform's automatic cascade-deletion can grow too large to handle in a transaction, and this results in one of 2 errors (Query Timeout, Cascade Too Large) along with transaction rollback (no deletions).
+Generally, it's safest and recommended to first cleanup ChildObject Shares and THEN GroupMembers / Groups as a follow-up step. However, the Shares cleanup step can be skipped in lower-volume orgs, or orgs where the Assignments plus Child-Nodes "fan-out factor" is guaranteed to remain _reasonable_ (~ 10 each Node with no large outliers) across the dataset. If you don't cleanup Shares first, the platform's automatic cascade-deletion can grow too large to handle in a transaction, and this results in one of 2 errors (Query Timeout, Cascade Too Large) along with transaction rollback (no deletions effected).
 
 ### Specification
 - Specify a ConfigKey (e.g. "Primary" though it needs to support others)
