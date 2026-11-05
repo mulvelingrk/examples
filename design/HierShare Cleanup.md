@@ -60,6 +60,7 @@ Generally, it's safest and recommended to first cleanup ChildObject Shares and T
     - _kill-unmapped_: true or false (default true recommended)
 
 3. Clobber ALL
+Abandon all hope; burn it all down to start anew:
     - Specify ConfigKey 
     - Base Scope: _all_ Modifier: _none_, for both ChildObjects and AssignmentScopes
     - _kill-unmapped_: true
