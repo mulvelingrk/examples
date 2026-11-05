@@ -6,7 +6,7 @@ Generally, it's safest and recommended to first cleanup ChildObject Shares and T
 
 ### Specification
 - Specify a ConfigKey (e.g. "Primary" though it needs to support others)
-- Loads Config to determine "current" AssignmentScopes and ChildRelationships (ChildObjects)
+    - Loads Config to determine "current" AssignmentScopes and ChildRelationships (ChildObjects)
 - AssignmentScopes specification:
     - Base Scope (choose one):
         - _current_: AssignmentScopes IN the current Config
