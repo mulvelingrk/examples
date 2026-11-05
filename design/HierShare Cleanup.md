@@ -59,8 +59,7 @@ Generally, it's safest and recommended to first cleanup ChildObject Shares and T
     - AssignmentScopes Base Scope: _none_ Modifier: _include_ {specific AssignmentScopes}
     - _kill-unmapped_: true or false (default true recommended)
 
-3. Clobber ALL
-Abandon all hope; burn it all down to start anew:
+3. Clobber ALL - Abandon all hope; burn it down to start anew:
     - Specify ConfigKey 
     - Base Scope: _all_ Modifier: _none_, for both ChildObjects and AssignmentScopes
     - _kill-unmapped_: true
@@ -106,7 +105,7 @@ Note: If your selection includes currently active GroupMember / Groups in its pu
     - Specify ConfigKey 
     - AssignmentScopes Base Scope: _none_ Modifier: _include_ {specific AssignmentScopes}
 
-3. Clobber ALL
+3. Clobber ALL - Abandon all hope; burn it down to start anew:
     - Specify ConfigKey 
     - AssignmentScopes Base Scope: _all_ Modifier: _none_
 
