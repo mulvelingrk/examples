@@ -8,28 +8,28 @@ Generally, it's safest and recommended to first cleanup ChildObject Shares and T
 - Specify a ConfigKey (e.g. "Primary" though it needs to support others)
 - Loads Config to determine "current" AssignmentScopes and ChildRelationships (ChildObjects)
 - AssignmentScopes specification:
-    - Base Scope:
-        - _current_ AssignmentScopes IN the current Config
-        - _extraneous_ AssignmentScopes NOT IN the current Config
-        - _all_ AssignmentScopes, like a `*` selector
-        - _none_ Combine with Modifiers for surgical selection, e.g. a specific AssignmentSet
+    - Base Scope (choose one):
+        - _current_: AssignmentScopes IN the current Config
+        - _extraneous_: AssignmentScopes NOT IN the current Config
+        - _all_: AssignmentScopes, like a `*` selector
+        - _none_: Combine with Modifiers for surgical selection, e.g. a specific AssignmentSet
     - Modifiers:
-        - _include_ AssignmentScopes, additional inclusions
-        - _exclude_ AssignmentScopes, exclusions (highest priority)
-        - _exclude-current_ ChildObjects, exclusions (highest priority)
-        - _none_ Bypass modifiers, when an unmodified Base Scope is all you need
+        - _include_: AssignmentScopes, additional inclusions
+        - _exclude_: AssignmentScopes, exclusions (highest priority)
+        - _exclude-current_: ChildObjects, exclusions (highest priority)
+        - _none_: Bypass modifiers, when an unmodified Base Scope is all you need
 - ChildObjects specification:
-    - Base Scope:
-        - _current_ ChildObjects IN the current Config (via ChildRelationships)
-        - _extraneous_ ChildObjects NOT IN the current Config
-        - _all_ ChildObjects, like a `*` selector
+    - Base Scope (choose one):
+        - _current_: ChildObjects IN the current Config (via ChildRelationships)
+        - _extraneous_: ChildObjects NOT IN the current Config
+        - _all_: ChildObjects, like a `*` selector
             - TODO: Research how to progrmatically determine the _all_ ChildObject scope by detecting SharingReasons matching this Config
-        - _none_ Combine with Modifiers for surgical selection, e.g. a specific ChildObject
+        - _none_: Combine with Modifiers for surgical selection, e.g. a specific ChildObject
     - Modifiers:
-        - _include_ ChildObjects, additional inclusions
-        - _exclude_ ChildObjects, exclusions (highest priority)
-        - _exclude-current_ ChildObjects, exclusions (highest priority)
-        - _none_ Bypass modifiers, when an unmodified Base Scope is all you need
+        - _include_: ChildObjects, additional inclusions
+        - _exclude_: ChildObjects, exclusions (highest priority)
+        - _exclude-current_: ChildObjects, exclusions (highest priority)
+        - _none_: Bypass modifiers, when an unmodified Base Scope is all you need
 - Unmapped specification:
     - {kill-unmapped}
     - Boolean true/false on whether to delete any _unmapped_ Shares encountered. Default true.
