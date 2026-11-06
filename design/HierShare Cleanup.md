@@ -24,10 +24,10 @@ Here is my design draft for new HierShare "Cleanup" tooling to improve upon pain
 ## Step 1: ChildObject Shares Cleanup
 Generally, it's safest and recommended to first cleanup ChildObject Shares and THEN GroupMembers / Groups as a follow-up step. However, the Shares cleanup step can be skipped in lower-volume orgs, or orgs where the Assignments plus Child-Nodes "fan-out factor" is guaranteed to remain _reasonable_ (~ 10 each Node with no large outliers) across the dataset. If you don't cleanup Shares first, the platform's automatic cascade-deletion can grow too large to handle in a transaction, and this results in one of 2 errors (Query Timeout, Cascade Too Large) along with transaction rollback (no deletions effected).
 
-### Specification
+### Selector Specification
 - Specify a ConfigKey (e.g. "Primary" though it needs to support others)
     - Loads Config to determine "current" AssignmentScopes and ChildRelationships (ChildObjects)
-- AssignmentScopes specification:
+- AssignmentScopes selector:
     - Base Scope (choose one):
         - _current_: AssignmentScopes IN the current Config
         - _extraneous_: AssignmentScopes NOT IN the current Config
@@ -38,7 +38,7 @@ Generally, it's safest and recommended to first cleanup ChildObject Shares and T
         - _exclude_: Specific exclusions (highest priority)
         - _exclude-current_: Excludes all of Config's _current_ AssignmentScopes (highest priority)
         - _none_: Bypass modifier, when unmodified Base Scope is all you need
-- ChildObjects specification:
+- ChildObjects selector:
     - Base Scope (choose one):
         - _current_: ChildObjects IN the current Config (via ChildRelationships)
         - _extraneous_: ChildObjects NOT IN the current Config
@@ -50,7 +50,7 @@ Generally, it's safest and recommended to first cleanup ChildObject Shares and T
         - _exclude_: Specific exclusions (highest priority)
         - _exclude-current_: Excludes all of Config's _current_ ChildObjects (highest priority)
         - _none_: Bypass modifier, when unmodified Base Scope is all you need
-- Unmapped specification:
+- Unmapped selector:
     - {kill-unmapped}
     - Boolean true/false on whether to delete any _unmapped_ Shares encountered. Default true.
 
@@ -88,8 +88,9 @@ Generally, it's safest and recommended to first cleanup ChildObject Shares and T
 This strategy works by selectively deleting first _mappings_ for each of GroupMembers / Groups, and *then* any physical GroupMembers / Groups that are presently "unmapped" (including those recently unmapped by the prior selective deletion!). However, note the 2nd phase is completely _unselective_ other than its _unmapped_ criteria: it kills all _unmapped_ entities, regardless of their origin ConfigKey or AssignmentScope! GroupMembers are fully processed first (mappings and then _unmapped_), then Groups (again mappings and then _unmapped_). 
 Note: If your selection includes currently active GroupMember / Groups in its purview, then active & parallel HierShare recalculations could potentially replace the _mappings_ during or after Cleanup processing. You must consider whether it is appropriate to first de-Activate HierShare in these cases. 
 
-### Specification
-- ConfigKey, AssignmentScopes, and Unmapped specification same as "ChildObject Shares Cleanup"
+### Selector Specification
+- ConfigKey, AssignmentScopes, and Unmapped selector specification same as "ChildObject Shares Cleanup"
+    - No ChildObjects selector needed here
 - No ChildObjects specification needed
 - {kill-unmapped} is intrinsically true (else this strategy doesn't work; it funnels selected mappings into _unmapped_)
 - TODO: Consider the following options:
