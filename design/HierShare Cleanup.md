@@ -1,6 +1,26 @@
 # HierShare Cleanup Strategies
 Here is my design draft for new HierShare "Cleanup" tooling to improve upon pain-points encountered with the unmanaged "Clobber" scripts I have floating around - which are themselves an improvement over rkcore's built-in "Cleanup" processing (exposed in HierShare's Process Admin UI). The latter is NOT recommended for use, and should be removed from the UI. 
 
+## Philosophy of Approach:
+- HierShare artifacts consist of Physical entities plus HierShare-metadata entities a.k.a. "Mappings"
+    - Physical: {ChildObject}__Share, GroupMapping, Group
+        - These do NOT contain information about the applicable ConfigKey, AssignmentScope, AccessLevel - because we can't add custom fields!
+    - Mapping: HierShare_Group_Mapping__c, HierShare_GroupMember_Mapping__c
+        - These DO contain information about the applicable ConfigKey, AssignmentScope, AccessLevel
+        - These custom objects are needed in lieu of custom fields on physical entities
+- Physical entities belonging to HierShare may only be identified by naming convention, as follows:
+    - Group: Name LIKE 'HierShare\_%' (can also use DeveloperName)
+    - GroupMember: Group.Name LIKE 'HierShare\_%' (can also use DeveloperName)
+    - {ChildObject}__Share: UserOrGroup.Name LIKE 'HierShare\_%' -OR- ShareReason = {HierShare.Config.shareReason}
+        - UserOrGroup is a polymorphic parent relationship, but we are able to query against its Group facet
+- Strategy:
+    - Start with a specification of { ConfigKey, ChildObjects, AssignmentScopes } to select target _Mappings_
+    - Delete the selected _Mappings_
+    - Delete physical HierShare entitities that are now found to be _unmapped_
+        - This set includes entities unmapped by the prior step, *plus* any entities that were previously unmapped (orphaned) for any reason. Once unmapped from HierShare, a physical entity should not exist!
+        - The last phase of physical deletions may be _parallelized_. This throughput gain is especially crucial for physical Groups, since the platform is _extremely_ slow at their deletion. 
+            - Without a __join__ or __merge__ primitive (e.g. look at MuleSoft's "Scatter and Gather" processor, or Go-routines), we do not have a way to synchronize a next phase / step after a parallelized step. For now, a subsequent step after parallelization must be manually kicked off after monitoring parallelized Apex Jobs for 100% completion. Practically, it's best to arrange processing so only the last step (e.g. physical Groups deletion) is parallelized, when possible.
+
 ## Step 1: ChildObject Shares Cleanup
 Generally, it's safest and recommended to first cleanup ChildObject Shares and THEN GroupMembers / Groups as a follow-up step. However, the Shares cleanup step can be skipped in lower-volume orgs, or orgs where the Assignments plus Child-Nodes "fan-out factor" is guaranteed to remain _reasonable_ (~ 10 each Node with no large outliers) across the dataset. If you don't cleanup Shares first, the platform's automatic cascade-deletion can grow too large to handle in a transaction, and this results in one of 2 errors (Query Timeout, Cascade Too Large) along with transaction rollback (no deletions effected).
 
