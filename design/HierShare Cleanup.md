@@ -53,6 +53,7 @@ Generally, it's safest and recommended to first cleanup ChildObject Shares and T
 - Unmapped selector:
     - {kill-unmapped}
     - Boolean true/false on whether to delete any _unmapped_ Shares encountered. Default true.
+    - TODO: Do we even need this; should we just have `true` implied? Is there ever a scenario we _wouldn't_ want to kill unmapped physical entities?
 
 ### Algorithm
 - For each ChildObject in-scope:
@@ -79,7 +80,13 @@ Generally, it's safest and recommended to first cleanup ChildObject Shares and T
     - AssignmentScopes Base Scope: _none_ Modifier: _include_ {specific AssignmentScopes}
     - _kill-unmapped_: true or false (default true recommended)
 
-3. Clobber ALL - Abandon all hope; burn it down to start anew:
+3. Clobber specific ChildObjects, e.g. a ChildRelationship no longer needed
+    - Specify ConfigKey 
+    - ChildObjects Base Scope: _none_ Modifier: _include_ {specific AssignmentScopes}
+    - AssignmentScopes Base Scope: _all_ Modifier: _none_
+    - _kill-unmapped_: true
+
+4. Clobber ALL - Abandon all hope; burn it down to start anew:
     - Specify ConfigKey 
     - Base Scope: _all_ Modifier: _none_, for both ChildObjects and AssignmentScopes
     - _kill-unmapped_: true
