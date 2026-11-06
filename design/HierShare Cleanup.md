@@ -4,10 +4,10 @@ Here is my design draft for new HierShare "Cleanup" tooling to improve upon pain
 ## Philosophy of Approach:
 - HierShare artifacts consist of Physical entities plus HierShare-metadata entities a.k.a. "Mappings"
     - Physical: {ChildObject}__Share, GroupMapping, Group
-        - These do NOT contain information about the applicable ConfigKey, AssignmentScope, AccessLevel - because we can't add custom fields!
+        - These standard objects do NOT contain information about the applicable ConfigKey, AssignmentScope, AccessLevel - because we can't add custom fields!
     - Mapping: HierShare_Group_Mapping__c, HierShare_GroupMember_Mapping__c
-        - These DO contain information about the applicable ConfigKey, AssignmentScope, AccessLevel
-        - These custom objects are needed in lieu of custom fields on physical entities
+        - These custom objects DO contain information about the applicable ConfigKey, AssignmentScope, AccessLevel
+        - These objects are needed in lieu of custom fields on physical entities
 - Physical entities belonging to HierShare may only be identified by naming convention, as follows:
     - Group: Name LIKE 'HierShare\_%' (can also use DeveloperName)
     - GroupMember: Group.Name LIKE 'HierShare\_%' (can also use DeveloperName)
@@ -16,7 +16,7 @@ Here is my design draft for new HierShare "Cleanup" tooling to improve upon pain
 - Strategy:
     - Start with a specification of { ConfigKey, ChildObjects, AssignmentScopes } to select target _Mappings_
     - Delete the selected _Mappings_
-    - Delete physical HierShare entitities that are now found to be _unmapped_
+    - Delete all physical HierShare entitities that are now found to be _unmapped_
         - This set includes entities unmapped by the prior step, *plus* any entities that were previously unmapped (orphaned) for any reason. Once unmapped from HierShare, a physical entity should not exist!
         - The last phase of physical deletions may be _parallelized_. This throughput gain is especially crucial for physical Groups, since the platform is _extremely_ slow at their deletion. 
             - Without a __join__ or __merge__ primitive (e.g. look at MuleSoft's "Scatter and Gather" processor, or Go-routines), we do not have a way to synchronize a next phase / step after a parallelized step. For now, a subsequent step after parallelization must be manually kicked off after monitoring parallelized Apex Jobs for 100% completion. Practically, it's best to arrange processing so only the last step (e.g. physical Groups deletion) is parallelized, when possible.
