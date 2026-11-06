@@ -14,7 +14,7 @@ Here is my design draft for new HierShare "Cleanup" tooling to improve upon pain
     - {ChildObject}__Share: UserOrGroup.Name LIKE 'HierShare\_%' -OR- ShareReason = {HierShare.Config.shareReason}
         - UserOrGroup is a polymorphic parent relationship, but we are able to query against its Group facet
 - Strategy:
-    - Start with a specification of { ConfigKey, ChildObjects, AssignmentScopes } to select target _Mappings_
+    - Start with a scope specification of { ConfigKey, ChildObjects, AssignmentScopes } to select target _Mappings_
     - Delete the selected _Mappings_
     - Delete all physical HierShare entitities that are now found to be _unmapped_
         - This set includes entities unmapped by the prior step, *plus* any entities that were previously unmapped (orphaned) for any reason. Once unmapped from HierShare, a physical entity should not exist!
