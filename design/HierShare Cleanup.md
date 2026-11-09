@@ -109,6 +109,7 @@ Note: If your selection includes currently active GroupMember / Groups in its pu
         - Can be a useful option if GroupMembers cleanup is taking very long
 
 ### Algorithm
+- The following should be executed as sequentially chained Batches:
 - Batch across HierShare_GroupMember_Mapping:
     - !! It's more efficient if in-scope selector logic can be baked into SOQL Query (DatabaseLocator) rather than Apex logic. However the latter is not a severe bottleneck.
     - IF {mapping.AssignmentScope is in-scope} THEN
