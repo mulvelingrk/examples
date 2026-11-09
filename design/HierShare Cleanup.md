@@ -94,8 +94,8 @@ Generally, it's safest and recommended to first cleanup ChildObject Shares and T
     - _kill-unmapped_: true
 
 ## Step 2: Groups & GroupMembers "Mappings-First" Cleanup
-This strategy works by selectively deleting first _mappings_ for each of GroupMembers / Groups, and *then* any physical GroupMembers / Groups that are presently "unmapped" (including those recently unmapped by the prior selective deletion!). However, note the 2nd phase is completely _unselective_ other than its _unmapped_ criteria: it kills all _unmapped_ entities, regardless of their origin ConfigKey or AssignmentScope! GroupMembers are fully processed first (mappings and then _unmapped_), then Groups (again mappings and then _unmapped_). 
-Note: If your selection includes currently active GroupMember / Groups in its purview, then active & parallel HierShare recalculations could potentially replace the _mappings_ during or after Cleanup processing. You must consider whether it is appropriate to first de-Activate HierShare in these cases. 
+This strategy works by first selectively deleting _Mappings_ for each of GroupMembers / Groups, and *then* any Physical GroupMembers / Groups that are presently _unmapped_ (including those recently unmapped by the prior selective deletion!). However, note the 2nd phase is _unselective_ other than its _unmapped_ criteria: it kills all _unmapped_ entities, regardless of their origin ConfigKey or AssignmentScope! GroupMembers are fully processed first (selected Mappings and then _unmapped_), then Groups (again selected Mappings and then _unmapped_). 
+Note: If your selection includes currently active GroupMember / Groups in its purview, then active & parallel HierShare recalculations could potentially replace the _Mappings_ during or after Cleanup processing. You must consider whether it is appropriate to first de-Activate HierShare in these cases. 
 
 ### Selector Specification
 - ConfigKey, AssignmentScopes, and Unmapped selector specification same as "ChildObject Shares Cleanup"
@@ -107,22 +107,24 @@ Note: If your selection includes currently active GroupMember / Groups in its pu
     - Groups only (no GroupMembers processing)
     - GroupMembers parallelize (only allowed when GroupMembers-only)
         - Can be a useful option if GroupMembers cleanup is taking very long
+
+### Algorithm
 - Batch across HierShare_GroupMember_Mapping:
+    - !! It's more efficient if in-scope selector logic can be baked into SOQL Query (DatabaseLocator) rather than Apex logic. However the latter is not a severe bottleneck.
     - IF {mapping.AssignmentScope is in-scope} THEN
         - Delete the HierShare_GroupMember_Mapping
 - Batch across GroupMember WHERE Group.Name LIKE 'HierShare\_%':
     - Try to match GroupMember.GroupId to any HierShare_GroupMember_Mapping__c.rkcore__NodeGroupId__c, also matching ConfigKey
-        - IF {mapping is null} AND {kill-unmapped is true} THEN
+        - IF {mapping is null} THEN
             - Delete the GroupMember
 - Batch across HierShare_Group_Mapping:
+    - !! It's more efficient if in-scope selector logic can be baked into SOQL Query (DatabaseLocator) rather than Apex logic. However the latter is not a severe bottleneck.
     - IF {mapping.AssignmentScope is in-scope} THEN
         - Delete the HierShare_Group_Mapping
-
-### Algorithm
 - Batch across Group WHERE Name LIKE 'HierShare\_%':
-    - Absolutely _parallelize_
+    - !! Highly recommneded to _parallelize_ this step. In fact this should probably be forced, not an option.
     - Try to match Group.Id to any HierShare_Group_Mapping__c.rkcore__GroupId__c, also matching ConfigKey
-        - IF {group is null} AND {kill-unmapped is true} THEN
+        - IF {mapping is null} THEN
             - Delete the Group
 
 ### Usage Patterns
