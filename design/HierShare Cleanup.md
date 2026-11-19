@@ -15,6 +15,13 @@ Here is my design draft for new HierShare "Cleanup" tooling to improve upon pain
     - GroupMember: Group.Name LIKE 'HierShare\_%' (can also use DeveloperName)
     - {ChildObject}__Share: UserOrGroup.Name LIKE 'HierShare\_%' -OR- ShareReason = {HierShare.Config.shareReason}
         - UserOrGroup is a polymorphic parent relationship, but we are able to query against its Group facet
+- Requirements:
+    - Cleanup tool should facilitate either targeted cleanups OR full cleanups
+        - Targeted cleanups specify target artifacts by: ConfigKey, AssignmentScope(s)[optional], AccessLevel[optional]
+            - E.g. "Remove all artifacts at AccessLevel='Read'" - This is useful for transitioning a client to a 2x more efficient "Edit only" HierShare config
+    - Cleanups targeting _extraneous_ and _unmapped_ HierShare artifacts may optionally be scheduled as Cron Jobs
+    - Targeted cleanups are valuable because they can remove HierShare artifacts from deprecated config on Production orgs _without_ causing disruption to current sharing config
+    - The use case for _full cleanup_ should be exceedingly rare: e.g. we decide to remove HierShare from an org
 - Strategy:
     - Start with a scope specification of { ConfigKey, ChildObjects, AssignmentScopes } to select target _Mappings_
     - Delete the selected _Mappings_
