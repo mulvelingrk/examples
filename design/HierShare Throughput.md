@@ -50,13 +50,21 @@ for (Integer i = 1; i <= NUM_THREADS; i++) {
 
 Batch code:
 ```java
+/*
+ * Mike Ulveling
+ *
+ * High Throughput multi-threaded strategy for HierShareGroupMembers processing. Takes all outstanding AsyncLoop
+ * Messages to the standard single-thread "HierShareGroupMembers" process; duplicates, repacks & safely 
+ * redistributes them into 30 parallel processes named `HierShareGroupMembers-{i}` for i in 1 ... 30
+ */
 public with sharing class AsyncLoopMessageRepack implements Database.Batchable<sObject> {
+    public static final String HIERSHARE_PROCESS_KEY = 'HierShareGroupMembers';
     public static final Integer NUM_THREADS = 30;
-    public static final Inetegr COALESCE = 100;
+    public static final Integer COALESCE = 100;
     
     public Iterable<sObject> start(Database.BatchableContext bc) {
         // Query AsyncLoop Messages targeting HierShare's standard single-thread process:
-        return new Database.getQueryLocator([ 
+        return Database.getQueryLocator([ 
             SELECT rkcore__Scope__c 
             FROM rkcore__AsyncLoop_Message__c 
             WHERE rkcore__Process_Key__c = 'HierShareGroupMembers' AND rkcore__Status__c = 'New' 
@@ -91,12 +99,12 @@ public with sharing class AsyncLoopMessageRepack implements Database.Batchable<s
         }
         // Repack the regrouped items into new Messages each targeting the appropriate process "threads":
         rkcore__AsyncLoop_Message__c[] newMessages = new rkcore__AsyncLoop_Message__c[0];
-        for (Id parentGroupId : itemsByGroupId.keySet()) {
+        for (Id parentGroupId : itemsByParentGroupId.keySet()) {
             // Deterministically maps {parentGroupId} to an integer in range: [ 1 - {NUM_THRADS} ] according to the 
             // well-known hashCode() and equals() contract of class String:
             Integer targetThread = Math.mod(String.valueOf(parentGroupId).hashCode(), NUM_THREADS) + 1;
             final String targetProcess = HIERSHARE_PROCESS_KEY + '-' + targetThread;
-            String[] originalItems = itemsByGroupId.get(parentGroupId);
+            String[] originalItems = itemsByParentGroupId.get(parentGroupId);
             String[] repackedItems = new String[0];
             while (originalItems.size() > 0) {
                 do {
