@@ -13,6 +13,39 @@ Each Work Item represents a single physical GroupMember by the form: `{parentGro
 ```
 
 # x30 (Max) Throughput Strategy
+AsyncLoop is my flexible framework for managing & monitoring custom Async Apex processing needs. It allows the definition of any number of custom "Processes":
+- Processes are defined as rows in Custom Object `rkcore__AsyncLoop_Process__c`
+    - Both packaged (rkcore) and client-specific Process definitions are supported 
+- Processes must be uniquely identified by their Process_Key (name)
+- Each Process may specify and define 1 or more calculation "Worker Strategies"
+    - Each Strategy must be backed by an Apex implementation
+- A common Message Queue `rkcore__AsyncLoop_Message__c` is used to submit processing requests to Processes:
+    - Messages must address a specific Process by Name: `rkcore__Process_Key__c`
+    - Messages must address a target Worker Strategy of that Process: `rkcore__Worker_Strategy__c`
+    - Messages may specify a variable number of Work Items: `rkcore__Scope__c`. The correct format & composition of Scope depends on the Worker Strategy. Some strategies (e.g. "Full") do not even use Scope.
+- Each Processes operates in its own "Thread", isolated from and in parallel to other Processes.
+- A Process's "Main Thread" continually monitors the Message Queue for items addressed to it:
+    - Loop:
+        - Query pending (New) Messages addressed to the current Process
+        - Coalesce & combine multiple pending Messages where possible, subject to "Work Item" limits configured on that Process
+        - Process the next (coalesed) Message according to is Worker Strategy, and then mark it as either: Invalid | Success | Failure
+        - Break Loop and go into "Standby" mode (terminate Thread) if there are no more Messages to Process
+    - Apex Trigger on `rkcore__AsyncLoop_Message__c` publishes "Wake-up" Signals (PlatformEvents) to any addressed Processes it finds in "Standby" mode. This is how we effect "always ON processing" without continuously burning through Async Apex Jobs like crazy.
+- Each Process works though its own Messages in strictly sequential / synchronous fashion - no internal parallelization! This is safe, but limits throughput for high volume demands. 
+- Processes run in parallel relative to all other Processes
+    - You MUST design your Process layout so they are safe to operate in this parallel fashion - e.g. does not elicit lock contentions nor race conditions!
+    - If you have any 2 Processes that are NOT safe to run in parallel, you shoud instead combine them and support their disparate processing needs via multiple Worker Strategies.
+
+I have a tenatatively planned enchancement to allow AsyncLoop Processes to each specify (optionally) their own "Thread Multiplier" factor, from 2 - 50.
+- Processes must also specify how to derive a "Thread Group Key" from each Work Item
+- The Main Process_Key becomes the "Master Routing Thread" at address [0]
+    - Master Thread's only job is to take Messages originally addressed to it, and repack & reroute them specifically into its child Threads [1] - [N]
+    - Master Thread parses out Work Items from its inbound Messages and uses the "Thread Group Key" specification to repack Work Items under their common "Thread Group Key", which is deterministically hash-mapped into a specific child Thread number [1] - [N]. The newly repacked Messages are addressed to the correct child Thread and inserted (and thereby routed)
+    - N=10 Threads results in a maximum theoretical throughput increase of 10x. In practice, it usually works out to 5x - 9x
+- Cloned child Processes 1 - N (N being the number of Threads specified) are automatically defined & declared by the framework, when this optional setting N > 1 is detected
+    - Need to handle edge cases for N expansion & contraction on existing prcoessing. What to do with existing in-flight Messages?
+
+The following sections of this document explain how to effect a similar throughput enhancement, without having to wait for the full-blown new feature to be released in a future version of rkcore.
 
 ## Step 1: Scripted Support
 Run in Developer Console > Execute Anonymous Apex:
