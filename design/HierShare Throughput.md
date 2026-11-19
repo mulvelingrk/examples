@@ -43,7 +43,7 @@ I have a tenatatively planned enchancement to allow AsyncLoop Processes to each 
     - Master Thread parses out Work Items from its inbound Messages and uses the "Thread Group Key" specification to repack Work Items under their common "Thread Group Key", which is deterministically hash-mapped into a specific child Thread number [1] - [N]. The newly repacked Messages are addressed to the correct child Thread and inserted (and thereby routed)
     - N=10 Threads results in a maximum theoretical throughput increase of 10x. In practice, it usually works out to 5x - 9x
 - Cloned child Processes 1 - N (N being the number of Threads specified) are automatically defined & declared by the framework, when this optional setting N > 1 is detected
-    - Need to handle edge cases for N expansion & contraction on existing prcoessing. What to do with existing in-flight Messages?
+    - Need to handle edge cases for N expansion & contraction on existing Processes. What to do with existing in-flight Messages?
 
 The following sections of this document explain how to effect a similar throughput enhancement, without having to wait for the full-blown new feature to be released in a future version of rkcore.
 
@@ -135,7 +135,7 @@ public with sharing class AsyncLoopMessageRepack implements Database.Batchable<s
         for (Id parentGroupId : itemsByParentGroupId.keySet()) {
             // Deterministically maps {parentGroupId} to an integer in range: [ 1 - {NUM_THRADS} ] according to the 
             // well-known hashCode() and equals() contract of class String:
-            Integer targetThread = Math.mod(String.valueOf(parentGroupId).hashCode(), NUM_THREADS) + 1;
+            Integer targetThread = pythonMod(String.valueOf(parentGroupId).hashCode(), NUM_THREADS) + 1;
             final String targetProcess = HIERSHARE_PROCESS_KEY + '-' + targetThread;
             String[] originalItems = itemsByParentGroupId.get(parentGroupId);
             String[] repackedItems = new String[0];
@@ -159,6 +159,19 @@ public with sharing class AsyncLoopMessageRepack implements Database.Batchable<s
     }
 
     public void finish(Database.BatchableContext bc) { } // no-op
+
+    // Needed a USABLE Math modulus function; Apex's Math.mod sucks and does not do what I want: a guaranteed 
+    // non-negative result to map a hashCode() result into range [1 to N]. Told AI to give me a basic Java impl 
+    // of Python's modulus op. This does what I want:
+    public static Integer pythonMod(Integer a, Integer b) {
+        if (b == 0) {
+            throw new IllegalArgumentException('integer division or modulo by zero');
+        }
+        // Cast to double before dividing so Math.floor rounds toward -infinity 
+        // instead of truncating toward zero like Java's integer division
+        Integer floorDiv = (Integer) Math.floor((Double) a / b);
+        return a - (b * floorDiv);
+    }
 }
 ```
 
