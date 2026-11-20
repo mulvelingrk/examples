@@ -42,9 +42,11 @@ I have a tenatatively planned enchancement to allow AsyncLoop Processes to each 
     - Master Thread's only job is to take Messages originally addressed to it, and repack & reroute them specifically into its child Threads [1] - [N]
     - Master Thread parses out Work Items from its inbound Messages and uses the "Thread Group Key" specification to repack Work Items under their common "Thread Group Key", which is deterministically hash-mapped into a specific child Thread number [1] - [N]. The newly repacked Messages are addressed to the correct child Thread and inserted (and thereby routed)
     - N=10 Threads results in a maximum theoretical throughput increase of 10x. In practice, it usually works out to 5x - 9x
+- We use a hashing algorithm to deterministically map Work Items to Threads. Why? In order to control concurrency (partial serialization) for Work Items that may not be safe to process in parallel. For example: say that processing child records updates a summary field on the parent. If children of a common parent are allowed to process in parallel, this creates lock contentions across the parallel Threads for the common resource: a parent row lock. By hashing on parent ID and deterministically (repeatably) assigning Work Items to a Thread # based on that, we can guarantee Work Items with the same parent *always* process sequentially in the same Thread.  
 - Cloned child Processes 1 - N (N being the number of Threads specified) are automatically defined & declared by the framework, when this optional setting N > 1 is detected
     - Need to handle edge cases for N expansion & contraction on existing Processes. What to do with existing in-flight Messages?
 
+If you're a student of Computer Science, you will recognize this as Goku's Kaio-Ken technique. 
 The following sections of this document explain how to effect a similar throughput enhancement, without having to wait for the full-blown new feature to be released in a future version of rkcore.
 
 ## Step 1: Scripted Support
@@ -73,6 +75,29 @@ for (Integer i = 1; i <= NUM_THREADS; i++) {
 }
 ```
 
+To De-Activate {NUM_THREADS} Threads:
+```java
+final Integer NUM_THREADS = AsyncLoopMessageRepack.NUM_THREADS; // 30
+final String HIERSHARE_PROCESS_KEY = AsyncLoopMessageRepack.HIERSHARE_PROCESS_KEY; // 'HierShareGroupMembers'
+for (Integer i = 1; i <= NUM_THREADS; i++) {
+    // e.g. "HierShareGroupMembers-1", "HierShareGroupMembers-2", ...
+    //rkcore.AsyncLoop.Activate(HIERSHARE_PROCESS_KEY + '-' + i);
+    rkcore.AsyncLoop.Dectivate(HIERSHARE_PROCESS_KEY + '-' + i);
+}
+```
+
+To Re-Activate {NUM_THREADS} Threads:
+Note you may need to break this up into chunks of (say) 10 Threads at a time, to stay under Apex SOQL/DML limits:
+```java
+final Integer NUM_THREADS = AsyncLoopMessageRepack.NUM_THREADS; // 30
+final String HIERSHARE_PROCESS_KEY = AsyncLoopMessageRepack.HIERSHARE_PROCESS_KEY; // 'HierShareGroupMembers'
+for (Integer i = 1; i <= NUM_THREADS; i++) {
+    // e.g. "HierShareGroupMembers-1", "HierShareGroupMembers-2", ...
+    //rkcore.AsyncLoop.Activate(HIERSHARE_PROCESS_KEY + '-' + i);
+    rkcore.AsyncLoop.Activate(HIERSHARE_PROCESS_KEY + '-' + i);
+}
+```
+
 ## Step 2: New Batch Process: AsyncLoopMessageRepack
 - Execute batch on a chunk size of 50 Messages
 - 100 Work Items per Message => 5,000 Work Items per Chunk (worst case)
@@ -92,7 +117,7 @@ Batch code:
  */
 public with sharing class AsyncLoopMessageRepack implements Database.Batchable<sObject> {
     public static final String HIERSHARE_PROCESS_KEY = 'HierShareGroupMembers';
-    public static final Integer NUM_THREADS = 30;
+    public static final Integer NUM_THREADS = 30; // Kaio-Ken x30
     public static final Integer COALESCE = 100;
     
     public Iterable<sObject> start(Database.BatchableContext bc) {
